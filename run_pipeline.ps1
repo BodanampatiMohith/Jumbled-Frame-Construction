@@ -28,9 +28,11 @@ if (-not (Test-Path $videoPath)) {
 Write-ColorMessage "`nVideo file found: $videoPath" "Green"
 
 # Prompt for FPS
-$fps = Read-Host "`nEnter FPS for output video (default: 30)"
-if ([string]::IsNullOrWhiteSpace($fps)) {
-    $fps = 30
+$fpsInput = Read-Host "`nEnter FPS for output video (press Enter to use original video FPS)"
+if ([string]::IsNullOrWhiteSpace($fpsInput)) {
+    $fpsArg = ""
+} else {
+    $fpsArg = " --fps $fpsInput"
 }
 
 # Prompt for jumble option
@@ -50,13 +52,17 @@ Write-Host "`n========================================" -ForegroundColor Cyan
 Write-Host " Pipeline Configuration" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-ColorMessage "Video File: $videoPath" "Blue"
-Write-ColorMessage "FPS: $fps" "Blue"
+if ([string]::IsNullOrWhiteSpace($fpsInput)) {
+    Write-ColorMessage "FPS: Auto (use original video FPS)" "Blue"
+} else {
+    Write-ColorMessage "FPS: $fpsInput" "Blue"
+}
 Write-ColorMessage "Jumble Frames: $jumble" "Blue"
 Write-ColorMessage "Output Directory: $outputDir" "Blue"
 Write-Host "========================================`n" -ForegroundColor Cyan
 
 # Build the command
-$cmd = "python src\run_pipeline.py --video `"$videoPath`" --fps $fps --output_dir `"$outputDir`""
+$cmd = "python src\run_pipeline.py --video `"$videoPath`"$fpsArg --output_dir `"$outputDir`""
 
 if ($jumble -eq "n" -or $jumble -eq "N") {
     $cmd += " --no_jumble"

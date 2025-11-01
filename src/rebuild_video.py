@@ -2,16 +2,36 @@ import cv2
 import numpy as np
 import os
 import gc
+import json
 
-def rebuild_video():
-
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+def rebuild_video(fps=None):
+    """
+    Rebuild video from frames in the determined order.
     
+    Args:
+        fps: Frames per second for output video. If None, uses original video FPS from metadata.
+    """
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     
     frames_dir = os.path.join(base_dir, 'data', 'frames_jumbled')
     order_path = os.path.join(base_dir, 'data', 'frame_order_final.npy')
     output_dir = os.path.join(base_dir, 'output')
     output_path = os.path.join(output_dir, 'reconstructed_video.mp4')
+    metadata_path = os.path.join(base_dir, 'data', 'video_metadata.json')
+    
+    # Load video metadata if available
+    if fps is None and os.path.exists(metadata_path):
+        try:
+            with open(metadata_path, 'r') as f:
+                metadata = json.load(f)
+                fps = metadata.get('fps', 30)
+                print(f"📝 Using original video FPS from metadata: {fps:.2f}")
+        except:
+            fps = 30
+            print(f"⚠️ Could not read metadata, defaulting to FPS: {fps}")
+    elif fps is None:
+        fps = 30
+        print(f"⚠️ No FPS specified and no metadata found, defaulting to: {fps}")
  
     os.makedirs(output_dir, exist_ok=True)
     
@@ -46,7 +66,6 @@ def rebuild_video():
         return
         
     height, width, _ = first_frame.shape
-    fps = 30 
     
     # Free up memory from first_frame
     del first_frame
@@ -54,7 +73,7 @@ def rebuild_video():
     
     print(f"\n🎥 Video Properties:")
     print(f"  - Resolution: {width}x{height}")
-    print(f"  - FPS: {fps}")
+    print(f"  - FPS: {fps:.2f}")
     print(f"  - Duration: {len(order)/fps:.2f} seconds")
     print(f"\n🛠️ Reconstructing video...")
 

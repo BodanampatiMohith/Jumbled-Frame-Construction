@@ -28,8 +28,14 @@ echo -e "${GREEN}Video file found:${NC} $VIDEO_PATH"
 echo ""
 
 # Prompt for FPS
-read -p "Enter FPS for output video (default: 30): " FPS
-FPS=${FPS:-30}
+read -p "Enter FPS for output video (press Enter to use original video FPS): " FPS
+if [ -z "$FPS" ]; then
+    FPS_ARG=""
+    FPS_DISPLAY="Auto (use original video FPS)"
+else
+    FPS_ARG="--fps $FPS"
+    FPS_DISPLAY="$FPS"
+fi
 
 # Prompt for jumble option
 read -p "Do you want to jumble frames? (y/n, default: y): " JUMBLE
@@ -44,14 +50,14 @@ echo "========================================"
 echo " Pipeline Configuration"
 echo "========================================"
 echo -e "${BLUE}Video File:${NC} $VIDEO_PATH"
-echo -e "${BLUE}FPS:${NC} $FPS"
+echo -e "${BLUE}FPS:${NC} $FPS_DISPLAY"
 echo -e "${BLUE}Jumble Frames:${NC} $JUMBLE"
 echo -e "${BLUE}Output Directory:${NC} $OUTPUT_DIR"
 echo "========================================"
 echo ""
 
 # Build the command
-CMD="python src/run_pipeline.py --video \"$VIDEO_PATH\" --fps $FPS --output_dir \"$OUTPUT_DIR\""
+CMD="python src/run_pipeline.py --video \"$VIDEO_PATH\" $FPS_ARG --output_dir \"$OUTPUT_DIR\""
 
 if [ "$JUMBLE" = "n" ] || [ "$JUMBLE" = "N" ]; then
     CMD="$CMD --no_jumble"

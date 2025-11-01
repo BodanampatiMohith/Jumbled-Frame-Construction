@@ -3,7 +3,7 @@ import sys
 import argparse
 from pathlib import Path
 
-def run_pipeline(video_path, output_dir="output", jumble_frames=True, fps=30):
+def run_pipeline(video_path, output_dir="output", jumble_frames=True, fps=None):
     """
     Run the complete video reconstruction pipeline.
     
@@ -11,7 +11,7 @@ def run_pipeline(video_path, output_dir="output", jumble_frames=True, fps=30):
         video_path (str): Path to the input video file.
         output_dir (str): Directory to save the output video.
         jumble_frames (bool): Whether to jumble frames before processing.
-        fps (int): Frames per second for the output video.
+        fps (float): Frames per second for the output video. If None, uses original video FPS.
     """
     # Ensure all required directories exist
     base_dir = Path(__file__).parent.parent  # Go up to project root (not src/)
@@ -47,7 +47,14 @@ def run_pipeline(video_path, output_dir="output", jumble_frames=True, fps=30):
         # Step 1: Extract frames (it will clear frames directory)
         print("\n1️⃣ Extracting frames...")
         from extract_frames import extract_frames
-        extract_frames(str(video_path), str(frames_dir))
+        original_fps, video_width, video_height = extract_frames(str(video_path), str(frames_dir))
+        
+        # Use original FPS if user didn't specify a custom one
+        if fps is None:
+            fps = original_fps
+            print(f"   Using original video FPS: {fps:.2f}")
+        else:
+            print(f"   Using custom FPS: {fps} (original was {original_fps:.2f})")
         
         if jumble_frames:
             # Step 2: Jumble frames
@@ -77,10 +84,11 @@ def run_pipeline(video_path, output_dir="output", jumble_frames=True, fps=30):
         # Step 6: Rebuild video
         print("\n6️⃣ Reconstructing video...")
         from rebuild_video import rebuild_video
-        rebuild_video()
+        rebuild_video(fps=fps)
         
         print(f"\n✅ Pipeline completed successfully!")
         print(f"   Output video saved to: {output_dir / 'reconstructed_video.mp4'}")
+        print(f"   Video FPS: {fps:.2f}")
         
     except Exception as e:
         print(f"\n❌ Error in pipeline: {str(e)}")
@@ -91,7 +99,7 @@ if __name__ == "__main__":
     parser.add_argument("--video", type=str, required=True, help="Path to the input video file")
     parser.add_argument("--output_dir", type=str, default="output", help="Directory to save the output video")
     parser.add_argument("--no_jumble", action="store_true", help="Skip frame jumbling")
-    parser.add_argument("--fps", type=int, default=30, help="Frames per second for the output video")
+    parser.add_argument("--fps", type=float, default=None, help="Frames per second for the output video (default: use original video FPS)")
     
     args = parser.parse_args()
     

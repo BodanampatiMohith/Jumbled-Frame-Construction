@@ -23,8 +23,12 @@ echo Video file: %VIDEO_PATH%
 echo.
 
 :: Prompt for FPS
-set /p FPS="Enter FPS for output video (default: 30): "
-if "%FPS%"=="" set FPS=30
+set /p FPS="Enter FPS for output video (press Enter to use original video FPS): "
+if "%FPS%"=="" (
+    set FPS_ARG=
+) else (
+    set FPS_ARG=--fps %FPS%
+)
 
 :: Prompt for jumble option
 set /p JUMBLE="Do you want to jumble frames? (y/n, default: y): "
@@ -39,14 +43,18 @@ echo ========================================
 echo  Pipeline Configuration
 echo ========================================
 echo Video File: %VIDEO_PATH%
-echo FPS: %FPS%
+if "%FPS%"=="" (
+    echo FPS: Auto ^(use original video FPS^)
+) else (
+    echo FPS: %FPS%
+)
 echo Jumble Frames: %JUMBLE%
 echo Output Directory: %OUTPUT_DIR%
 echo ========================================
 echo.
 
 :: Build the command
-set CMD=python src\run_pipeline.py --video "%VIDEO_PATH%" --fps %FPS% --output_dir "%OUTPUT_DIR%"
+set CMD=python src\run_pipeline.py --video "%VIDEO_PATH%" %FPS_ARG% --output_dir "%OUTPUT_DIR%"
 
 if /i "%JUMBLE%"=="n" (
     set CMD=!CMD! --no_jumble
