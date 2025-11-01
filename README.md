@@ -1,11 +1,10 @@
-<<<<<<< HEAD
-# Jumbled-Frame-Construction
-=======
 # Jumbled Frame Reconstruction
 
 [![GitHub stars](https://img.shields.io/github/stars/BodanampatiMohith/Jumbled-Frame-Construction?style=social)](https://github.com/BodanampatiMohith/Jumbled-Frame-Construction/stargazers)
 [![GitHub issues](https://img.shields.io/github/issues/BodanampatiMohith/Jumbled-Frame-Construction)](https://github.com/BodanampatiMohith/Jumbled-Frame-Construction/issues)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![algorithm](https://img.shields.io/badge/Algorithm-blue)](https://github.com/BodanampatiMohith/Jumbled-Frame-Construction/blob/main/algo.md)
+
 
 Reconstruct the original sequence of frames from a jumbled video using computer vision and machine learning. This project is particularly useful for video restoration, forensic analysis, and educational purposes.
 
@@ -115,4 +114,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - ResNet-18 model for feature extraction
 - OpenCV for video processing
 - scikit-learn for similarity calculations
->>>>>>> 466a2d8 (Initial commit: ML-based Jumbled Frame Reconstruction pipeline with CUDA and batching support)

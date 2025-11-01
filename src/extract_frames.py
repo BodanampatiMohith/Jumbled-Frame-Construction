@@ -3,7 +3,12 @@ import os
 from tqdm import tqdm
 
 def extract_frames(video_path, output_dir):
+    # Clear the output directory if it exists
+    import shutil
+    if os.path.exists(output_dir):
+        shutil.rmtree(output_dir)
     os.makedirs(output_dir, exist_ok=True)
+    
     cap = cv2.VideoCapture(video_path)
 
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -23,16 +28,14 @@ def extract_frames(video_path, output_dir):
 
 if __name__ == "__main__":
     import os
-    # Use relative paths
+ 
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    
-    # Video file name - change this to your video file name
-    video_filename = 'jumbled_video.mp4'
+
+    video_filename = 'humans_1.mp4'
     
     video_path = os.path.join(base_dir, 'data', video_filename)
     output_dir = os.path.join(base_dir, 'data', 'frames')
-    
-    # Create necessary directories
+
     os.makedirs(os.path.dirname(video_path), exist_ok=True)
     os.makedirs(output_dir, exist_ok=True)
     

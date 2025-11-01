@@ -10,7 +10,9 @@ def jumble_frames():
     input_dir = os.path.join(base_dir, 'data', 'frames')
     output_dir = os.path.join(base_dir, 'data', 'frames_jumbled')
     
-    # Create output directory if it doesn't exist
+    # Create output directory if it doesn't exist, clear it if it does
+    if os.path.exists(output_dir):
+        shutil.rmtree(output_dir)
     os.makedirs(output_dir, exist_ok=True)
     
     # Get all image files from input directory

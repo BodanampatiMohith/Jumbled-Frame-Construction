@@ -1,18 +1,18 @@
 import cv2
 import numpy as np
 import os
+import gc
 
 def rebuild_video():
-    # Get the base directory (one level up from src)
+
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     
-    # Define file paths
+    
     frames_dir = os.path.join(base_dir, 'data', 'frames_jumbled')
     order_path = os.path.join(base_dir, 'data', 'frame_order_final.npy')
     output_dir = os.path.join(base_dir, 'output')
     output_path = os.path.join(output_dir, 'reconstructed_video.mp4')
-    
-    # Create output directory if it doesn't exist
+ 
     os.makedirs(output_dir, exist_ok=True)
     
     print("🎞️ Loading frame order...")
@@ -24,10 +24,9 @@ def rebuild_video():
     order = np.load(order_path)
     print(f"  - Total frames in order: {len(order)}")
 
-    # Get list of frame files
     frame_files = [f for f in os.listdir(frames_dir) 
                   if f.endswith(('.jpg', '.jpeg', '.png'))]
-    frame_files.sort()  # Important to maintain consistent ordering
+    frame_files.sort() 
     
     if not frame_files:
         print(f"❌ No frame files found in {frames_dir}")
@@ -35,15 +34,23 @@ def rebuild_video():
         
     print(f"  - Found {len(frame_files)} frame files")
 
-    # Get video properties from first frame
     first_frame_path = os.path.join(frames_dir, frame_files[0])
-    first_frame = cv2.imread(first_frame_path)
-    if first_frame is None:
-        print(f"❌ Could not read frame: {first_frame_path}")
+    try:
+        first_frame = cv2.imread(first_frame_path, cv2.IMREAD_COLOR)
+        if first_frame is None:
+            print(f"❌ Could not read frame: {first_frame_path}")
+            return
+    except Exception as e:
+        print(f"❌ Error reading first frame: {str(e)}")
+        print("💡 Try closing other applications to free up memory")
         return
         
     height, width, _ = first_frame.shape
-    fps = 30  # Frames per second
+    fps = 30 
+    
+    # Free up memory from first_frame
+    del first_frame
+    gc.collect()
     
     print(f"\n🎥 Video Properties:")
     print(f"  - Resolution: {width}x{height}")
@@ -60,24 +67,35 @@ def rebuild_video():
         if frame_idx >= len(frame_files):
             print(f"⚠️ Frame index {frame_idx} out of range. Skipping...")
             continue
-            
-        frame_path = os.path.join(frames_dir, frame_files[frame_idx])
-        frame = cv2.imread(frame_path)
         
-        if frame is None:
-            print(f"⚠️ Could not read frame {frame_path}. Skipping...")
-            continue
+        try:
+            frame_path = os.path.join(frames_dir, frame_files[frame_idx])
+            frame = cv2.imread(frame_path, cv2.IMREAD_COLOR)
             
-        out.write(frame)
+            if frame is None:
+                print(f"⚠️ Could not read frame {frame_path}. Skipping...")
+                continue
+                
+            out.write(frame)
+            
+            # Free memory for the frame
+            del frame
+            
+            # Periodic garbage collection
+            if (i + 1) % 50 == 0:
+                gc.collect()
+            
+        except Exception as e:
+            print(f"⚠️ Error processing frame {frame_idx}: {str(e)}")
+            continue
         
         # Show progress
         if (i + 1) % 50 == 0 or (i + 1) == len(order):
             print(f"  - Processed {i + 1}/{len(order)} frames...")
-    
-    # Release video writer
+
     out.release()
     
-    # Verify the output file was created
+
     if os.path.exists(output_path):
         file_size = os.path.getsize(output_path) / (1024 * 1024)  # in MB
         print(f"\n✅ Success! Video saved to: {output_path}")
